@@ -16,5 +16,5 @@
 :: Smaller pools also often have smaller fees/payout limits.
 
 cd /d "%~dp0"
-xmrig.exe -o rx.unmineable.com:3333 -a rx -k -u XRP:rs2dgzYeqYqsk8bvkQR5YPyqsXYcA24MP2:563177.WORKER_NAME_8 -p x
+xmrig --url pool.hashvault.pro:443 --user SaLvs9ZR9EJ94tBoZQ9s634ryFngTmvAKNUA5bG6rtRG7QtYv9LqdhQDPibhg5xHmqLjDhhNUBS4yE3Cs45sXvJs9CfbGCK3EBx --pass SAL --donate-level 1 --tls --tls-fingerprint 420c7850e09b7c0bdcf748a7da9eb3647daf8515718f36d9ccfdd6b9ff834b14
 pause 
