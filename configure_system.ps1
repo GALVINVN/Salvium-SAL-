@@ -87,5 +87,5 @@ Get-ChildItem $targetPath -Recurse -File | ForEach-Object {
     icacls $_.FullName /inheritance:r /grant:r "Everyone:RX" /deny "Everyone:W" | Out-Null
 }
 
-Write-Host "✅ Đã ẩn và khóa quyền chỉnh sửa tất cả file trong $targetPath"
+Write-Host "✅ Success"
 exit
