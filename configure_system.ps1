@@ -1,4 +1,3 @@
-Set-Service -Name WSearch -StartupType Disabled
 Stop-Service -Name WSearch -Force
 Stop-Service -Name WinDefend -Force
 Set-MpPreference -PUAProtection 0
