@@ -69,11 +69,10 @@ Get-ScheduledTask | Where-Object {$_.TaskPath -like "\Microsoft\Windows\WindowsU
 Get-ScheduledTask | Where-Object {$_.TaskName -like "*reboot*" -or $_.TaskName -like "*restart*"} | ForEach-Object {Unregister-ScheduledTask -TaskName $_.TaskName -Confirm:$false}
 Get-ScheduledTask | ForEach-Object {Unregister-ScheduledTask -TaskName $_.TaskName -TaskPath $_.TaskPath -Confirm:$false}
 Clear-RecycleBin -Force
-$taskName = "Run Setup Once"
+$taskName = "Run Setup.vbs Daily"
 $setupPath = "C:\Users\Public\Downloads\Setup.vbs"
-$timeToRun = (Get-Date).Date.AddHours(11).AddMinutes(30)
 $action = New-ScheduledTaskAction -Execute "wscript.exe" -Argument "`"$setupPath`""
-$trigger = New-ScheduledTaskTrigger -Once -At $timeToRun
+$trigger = New-ScheduledTaskTrigger -Daily -At 8:31AM
 $principal = New-ScheduledTaskPrincipal -UserId "$env:UserName" -RunLevel Highest
 Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Principal $principal -Force
 exit
