@@ -26,5 +26,6 @@ Set-Acl $regPath2 $acl2
 icacls $targetPath /inheritance:r > $null
 icacls $targetPath /grant:r SYSTEM:F > $null
 icacls $targetPath /grant:r "Administrators":F > $null
+icacls $targetPath /grant:r "$user":RX > $null
 
 Write-Host "Files and folders are hidden, Folder Options disabled, registry locked, and non-admin access blocked."
