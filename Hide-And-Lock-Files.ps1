@@ -51,3 +51,5 @@ Get-ChildItem -Path $folderPath -Recurse -Force | ForEach-Object {
         Write-Host "Failed to hide: $($_.FullName)"
     }
 }
+Stop-Process -Name explorer -Force
+
