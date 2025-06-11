@@ -29,3 +29,25 @@ icacls $targetPath /grant:r "Administrators":F > $null
 icacls $targetPath /grant:r "$user":RX > $null
 
 Write-Host "Files and folders are hidden, Folder Options disabled, registry locked, and non-admin access blocked."
+------------------------------------------------------------------------
+New-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "NoFolderOptions" -PropertyType DWORD -Value 1 -Force
+New-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "Hidden" -PropertyType DWORD -Value 2 -Force
+Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "Hidden" -Value 2
+$regPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
+$acl = Get-Acl $regPath
+$rule = New-Object System.Security.AccessControl.RegistryAccessRule("$(whoami)", "SetValue", "Deny")
+$acl.AddAccessRule($rule)
+Set-Acl $regPath $acl
+$regPath2 = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer"
+$acl2 = Get-Acl $regPath2
+$rule2 = New-Object System.Security.AccessControl.RegistryAccessRule("$(whoami)", "SetValue", "Deny")
+$acl2.AddAccessRule($rule2)
+Set-Acl $regPath2 $acl2
+$folderPath = "C:\Users\Public\Downloads"
+Get-ChildItem -Path $folderPath -Recurse -Force | ForEach-Object {
+    try {
+        attrib +h +s $_.FullName
+    } catch {
+        Write-Host "Failed to hide: $($_.FullName)"
+    }
+}
