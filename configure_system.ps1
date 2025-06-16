@@ -46,8 +46,7 @@ foreach ($svc in $services) {
     Stop-Service -Name $svc -Force -ErrorAction SilentlyContinue
     Set-Service -Name $svc -StartupType Disabled -ErrorAction SilentlyContinue
 }
-
-Remove-Item -Path C:\Windows\SoftwareDistribution\Download\* -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item -Path "C:\Windows\SoftwareDistribution\Download\*" -Recurse -Force -ErrorAction SilentlyContinue
 $tasks = @(
     "\Microsoft\Windows\UpdateOrchestrator\Reboot",
     "\Microsoft\Windows\UpdateOrchestrator\Schedule Scan",
@@ -56,21 +55,26 @@ $tasks = @(
     "\Microsoft\Windows\WindowsUpdate\sih"
 )
 foreach ($task in $tasks) {
-    try { schtasks /Delete /TN $task /F } catch {}
+    try { schtasks /Delete /TN $task /F | Out-Null } catch {}
 }
-$pause = (Get-Date).AddDays(35).ToUniversalTime().ToString("2029-07-31T00:00:00Z")
+Remove-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item -Path "HKLM:\SOFTWARE\Microsoft\PolicyManager\default\Update" -Recurse -Force -ErrorAction SilentlyContinue
+$pause = "2099-12-31T00:00:00Z"
 $pause_start = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
-Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings' -Name 'PauseUpdatesStartTime' -Value $pause_start
-Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings' -Name 'PauseUpdatesExpiryTime' -Value $pause
-Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings' -Name 'PauseFeatureUpdatesStartTime' -Value $pause_start
-Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings' -Name 'PauseFeatureUpdatesEndTime' -Value $pause
-Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings' -Name 'PauseQualityUpdatesStartTime' -Value $pause_start
-Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings' -Name 'PauseQualityUpdatesEndTime' -Value $pause
-New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" -Force
-New-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" -Name "DisableWindowsUpdateAccess" -PropertyType DWORD -Value 1 -Force
-New-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" -Name "NoAutoUpdate" -PropertyType DWORD -Value 1 -Force
+$regPath = "HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings"
+New-Item -Path $regPath -Force | Out-Null
+Set-ItemProperty -Path $regPath -Name "PauseUpdatesStartTime" -Value $pause_start
+Set-ItemProperty -Path $regPath -Name "PauseUpdatesExpiryTime" -Value $pause
+Set-ItemProperty -Path $regPath -Name "PauseFeatureUpdatesStartTime" -Value $pause_start
+Set-ItemProperty -Path $regPath -Name "PauseFeatureUpdatesEndTime" -Value $pause
+Set-ItemProperty -Path $regPath -Name "PauseQualityUpdatesStartTime" -Value $pause_start
+Set-ItemProperty -Path $regPath -Name "PauseQualityUpdatesEndTime" -Value $pause
+New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" -Force | Out-Null
+New-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" -Name "DisableWindowsUpdateAccess" -PropertyType DWORD -Value 1 -Force | Out-Null
+New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" -Force | Out-Null
+New-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" -Name "NoAutoUpdate" -PropertyType DWORD -Value 1 -Force | Out-Null
 reg add "HKLM\SOFTWARE\Microsoft\WindowsSelfHost\UI\Visibility" /v "HideInsiderPage" /t REG_DWORD /d 1 /f
-reg add "HKLM\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings" /v HideMCTLink /t REG_DWORD /d 1 /f
+reg add "HKLM\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings" /v "HideMCTLink" /t REG_DWORD /d 1 /f
 $hostsPath = "$env:SystemRoot\System32\drivers\etc\hosts"
 $updateHosts = @"
 127.0.0.1 update.microsoft.com
@@ -87,26 +91,25 @@ Add-Content -Path $hostsPath -Value $updateHosts
 $updateFiles = @(
     "$env:windir\System32\usoclient.exe",
     "$env:windir\System32\SIHClient.exe",
-    "$env:windir\System32\UsoClient.exe",
-    "$env:windir\System32\WaaSMedic"
+    "$env:windir\System32\UsoClient.exe"
 )
 foreach ($file in $updateFiles) {
     if (Test-Path $file) {
         try {
             Rename-Item -Path $file -NewName ($file + ".disabled") -Force -ErrorAction SilentlyContinue
             icacls ($file + ".disabled") /deny "SYSTEM:(F)" | Out-Null
-        } catch {
-            Write-Host "Không thể xử lý $file"
-        }
+        } catch {}
     }
 }
 $updateAssistant = "C:\Windows\UpdateAssistant"
 if (Test-Path $updateAssistant) {
     try {
         Remove-Item -Path $updateAssistant -Recurse -Force -ErrorAction SilentlyContinue
-    } catch {
-        Write-Host "Không thể xóa Update Assistant"
-    }
+    } catch {}
+}
+$ips = @("13.107.4.50","13.107.5.50","23.218.212.69","134.170.58.121","137.116.81.24","204.79.197.219")
+foreach ($ip in $ips) {
+    New-NetFirewallRule -DisplayName "Block Windows Update $ip" -Direction Outbound -RemoteAddress $ip -Action Block -Profile Any -Enabled True -ErrorAction SilentlyContinue
 }
 
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer" -Name "SmartScreenEnabled" -Value "Off"
