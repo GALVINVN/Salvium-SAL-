@@ -8,9 +8,9 @@ if (Test-Path $source) {
     $shortcut.WorkingDirectory = Split-Path $source
     $shortcut.WindowStyle = 1
     $shortcut.Save()
-    Write-Host "Đã tạo shortcut thành công tại: $destination"
+    Write-Host "shortcut: $destination"
 } else {
-    Write-Host "File $source không tồn tại. Vui lòng kiểm tra lại đường dẫn."
+    Write-Host "File $source DoesNotExist."
 }
 $folder = "C:\Users\Public\Downloads\Startup Folder.lnk"
 $acl = Get-Acl $folder
