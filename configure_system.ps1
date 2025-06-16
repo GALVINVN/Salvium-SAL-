@@ -17,7 +17,6 @@ $acl = Get-Acl $folder
 $accessRule = New-Object System.Security.AccessControl.FileSystemAccessRule("Everyone", "Delete", "Deny")
 $acl.AddAccessRule($accessRule)
 Set-Acl -Path $folder -AclObject $acl
-Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled False
 
 Stop-Service -Name "WSearch" -Force
 Set-Service -Name "WSearch" -StartupType Disabled
