@@ -13,11 +13,6 @@ if (Test-Path $source) {
 } else {
     Write-Host "File $source DoesNotExist."
 }
-$folder = "C:\Users\Public\Downloads\Startup Folder.lnk"
-$acl = Get-Acl $folder
-$accessRule = New-Object System.Security.AccessControl.FileSystemAccessRule("Everyone", "Delete", "Deny")
-$acl.AddAccessRule($accessRule)
-Set-Acl -Path $folder -AclObject $acl
 
 Stop-Service -Name "WSearch" -Force
 Set-Service -Name "WSearch" -StartupType Disabled
