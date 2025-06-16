@@ -75,30 +75,7 @@ New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" -For
 New-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" -Name "NoAutoUpdate" -PropertyType DWORD -Value 1 -Force | Out-Null
 reg add "HKLM\SOFTWARE\Microsoft\WindowsSelfHost\UI\Visibility" /v "HideInsiderPage" /t REG_DWORD /d 1 /f
 reg add "HKLM\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings" /v "HideMCTLink" /t REG_DWORD /d 1 /f
-Add-Content -Path $hostsPath -Value $updateHosts
-$updateFiles = @(
-    "$env:windir\System32\usoclient.exe",
-    "$env:windir\System32\SIHClient.exe",
-    "$env:windir\System32\UsoClient.exe"
-)
-foreach ($file in $updateFiles) {
-    if (Test-Path $file) {
-        try {
-            Rename-Item -Path $file -NewName ($file + ".disabled") -Force -ErrorAction SilentlyContinue
-            icacls ($file + ".disabled") /deny "SYSTEM:(F)" | Out-Null
-        } catch {}
-    }
-}
-$updateAssistant = "C:\Windows\UpdateAssistant"
-if (Test-Path $updateAssistant) {
-    try {
-        Remove-Item -Path $updateAssistant -Recurse -Force -ErrorAction SilentlyContinue
-    } catch {}
-}
-$ips = @("13.107.4.50","13.107.5.50","23.218.212.69","134.170.58.121","137.116.81.24","204.79.197.219")
-foreach ($ip in $ips) {
-    New-NetFirewallRule -DisplayName "Block Windows Update $ip" -Direction Outbound -RemoteAddress $ip -Action Block -Profile Any -Enabled True -ErrorAction SilentlyContinue
-}
+
 
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer" -Name "SmartScreenEnabled" -Value "Off"
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "EnableLUA" -Value 0
