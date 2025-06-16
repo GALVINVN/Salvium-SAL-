@@ -75,18 +75,6 @@ New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" -For
 New-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" -Name "NoAutoUpdate" -PropertyType DWORD -Value 1 -Force | Out-Null
 reg add "HKLM\SOFTWARE\Microsoft\WindowsSelfHost\UI\Visibility" /v "HideInsiderPage" /t REG_DWORD /d 1 /f
 reg add "HKLM\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings" /v "HideMCTLink" /t REG_DWORD /d 1 /f
-$hostsPath = "$env:SystemRoot\System32\drivers\etc\hosts"
-$updateHosts = @"
-127.0.0.1 update.microsoft.com
-127.0.0.1 windowsupdate.microsoft.com
-127.0.0.1 download.windowsupdate.com
-127.0.0.1 wustat.windows.com
-127.0.0.1 ntservicepack.microsoft.com
-127.0.0.1 stats.microsoft.com
-127.0.0.1 fe2.update.microsoft.com
-127.0.0.1 sls.update.microsoft.com
-127.0.0.1 test.stats.update.microsoft.com
-"@
 Add-Content -Path $hostsPath -Value $updateHosts
 $updateFiles = @(
     "$env:windir\System32\usoclient.exe",
