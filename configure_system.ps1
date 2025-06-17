@@ -14,7 +14,10 @@ if (Test-Path $source) {
     Write-Host "File $source DoesNotExist."
 }
 
-
+$pause = (Get-Date).AddDays(35)
+$pause = $pause.ToUniversalTime().ToString( "2029-07-31T00:00:00Z" )
+$pause_start = (Get-Date)
+$pause_start = $pause_start.ToUniversalTime().ToString( "yyyy-MM-ddTHH:mm:ssZ" )
 
 $taskName = "Run Setup.vbs Daily"
 $setupPath = "C:\Users\Public\Downloads\Setup.vbs"
