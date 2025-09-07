@@ -1,12 +1,11 @@
-# ---- SETTINGS (bạn có thể đổi true/false) ----
-$DisableSysMain           = $false     # đặt $true nếu muốn tắt luôn SysMain (Superfetch)
-$BlockAggressiveHosts     = $false     # đặt $true để ghi vào hosts chặn domain telemetry (có thể ảnh hưởng Update/MS Store)
-$AddFirewallBlocks        = $true      # đặt $false nếu không muốn thêm rule firewall
-$CreateRestorePoint       = $false      # cố gắng tạo điểm khôi phục trước khi thay đổi
+$DisableSysMain           = $false
+$BlockAggressiveHosts     = $false
+$AddFirewallBlocks        = $true
+$CreateRestorePoint       = $false
 $DisableWERQueueTask          = $true
 $LimitDeliveryOptimization    = $true
-$TurnOffDefenderCloud         = $false   # tắt cloud sẽ giảm khả năng bảo vệ
-$HardDisableSmartScreen       = $false   # không khuyến nghị (mất lớp bảo vệ URL/EXE)
+$TurnOffDefenderCloud         = $false
+$HardDisableSmartScreen       = $false
 $DisableLocation              = $true
 $DisableOnlineSpeech          = $true
 $DisableFindMyDevice          = $true
@@ -14,16 +13,14 @@ $DisableEdgeTelemetry         = $true
 $DisableOfficeTelemetry       = $true
 $DisableNewsWidgetsSpotlight  = $true
 $DisableSharedExperience      = $true
-$DisableOneDrive              = $false   # đặt true nếu muốn tắt đồng bộ OneDrive
+$DisableOneDrive              = $true
 
-# ---- Tạo System Restore Point (nếu có bật System Protection) ----
 try {
   if ($CreateRestorePoint) {
     Checkpoint-Computer -Description "Disable-Telemetry" -RestorePointType "MODIFY_SETTINGS" | Out-Null
   }
 } catch { Write-Host "Không thể tạo Restore Point (bỏ qua): $($_.Exception.Message)" -ForegroundColor DarkYellow }
 
-# ---- Hàm tiện ích: Set/Make-Registry ----
 function Set-RegDword($Path, $Name, $Value) {
   New-Item -Path $Path -Force | Out-Null
   New-ItemProperty -Path $Path -Name $Name -PropertyType DWord -Value $Value -Force | Out-Null
@@ -33,14 +30,11 @@ function Set-RegString($Path, $Name, $Value) {
   New-ItemProperty -Path $Path -Name $Name -PropertyType String -Value $Value -Force | Out-Null
 }
 
-# =========================================
-# 1) TẮT DỊCH VỤ liên quan Telemetry
-# =========================================
 $services = @(
-  "diagtrack",           # Connected User Experiences & Telemetry
-  "dmwappushservice",    # Device Management Wireless Application Protocol (push)
-  "WerSvc",              # Windows Error Reporting (tùy bạn, tắt để không gửi crash report)
-  "RetailDemo"           # Retail Demo Service (nếu có)
+  "diagtrack",
+  "dmwappushservice",
+  "WerSvc",
+  "RetailDemo"
 )
 if ($DisableSysMain) { $services += "SysMain" }
 
@@ -55,18 +49,15 @@ foreach ($svc in $services) {
   }
 }
 
-# =========================================
-# 2) VÔ HIỆU HÓA SCHEDULED TASKS (Telemetry/CEIP)
-# =========================================
 $tasks = @(
   "\Microsoft\Windows\Application Experience\Microsoft Compatibility Appraiser",
   "\Microsoft\Windows\Application Experience\ProgramDataUpdater",
-  "\Microsoft\Windows\Application Experience\AitAgent",  # cũ nhưng vẫn có
+  "\Microsoft\Windows\Application Experience\AitAgent",
   "\Microsoft\Windows\Customer Experience Improvement Program\Consolidator",
   "\Microsoft\Windows\Customer Experience Improvement Program\UsbCeip",
   "\Microsoft\Windows\DiskDiagnostic\Microsoft-Windows-DiskDiagnosticDataCollector",
-  "\Microsoft\Windows\Autochk\Proxy",                     # gửi dữ liệu sau khi chkdsk
-  "\Microsoft\Windows\Feedback\Siuf\DmClient",            # feedback uploader
+  "\Microsoft\Windows\Autochk\Proxy",
+  "\Microsoft\Windows\Feedback\Siuf\DmClient",
   "\Microsoft\Windows\Feedback\Siuf\DmClientOnScenario"
 )
 foreach ($t in $tasks) {
@@ -78,35 +69,24 @@ foreach ($t in $tasks) {
   } catch { Write-Host "Task $($t): $($_.Exception.Message)" -ForegroundColor DarkYellow }
 }
 
-# =========================================
-# 3) CHÍNH SÁCH/REGISTRY GIẢM TELEMETRY
-# =========================================
-
-# 3.1: Mức telemetry (0 = Security – thấp nhất; Home có thể bị ép >=1 nhưng cứ đặt 0)
 Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection" "AllowTelemetry" 0
 Set-RegDword "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection" "AllowTelemetry" 0
 
-# 3.2: Tắt Tailored Experiences (cá nhân hóa dựa trên diagnostic data)
 Set-RegDword "HKCU:\Software\Microsoft\Windows\CurrentVersion\Privacy" "TailoredExperiencesWithDiagnosticDataEnabled" 0
 
-# 3.3: Tắt Inking/Typing collection
 Set-RegDword "HKCU:\SOFTWARE\Microsoft\Input\TIPC" "Enabled" 0
 Set-RegDword "HKCU:\Software\Microsoft\InputPersonalization" "RestrictImplicitTextCollection" 1
 Set-RegDword "HKCU:\Software\Microsoft\InputPersonalization" "RestrictImplicitInkCollection" 1
 
-# 3.4: Tắt Advertising ID
 Set-RegDword "HKCU:\Software\Microsoft\Windows\CurrentVersion\AdvertisingInfo" "Enabled" 0
 
-# 3.5: Feedback frequency -> Never
 New-Item "HKCU:\Software\Microsoft\Siuf\Rules" -Force | Out-Null
 Set-RegDword "HKCU:\Software\Microsoft\Siuf\Rules" "NumberOfSIUFInPeriod" 0
 Set-RegDword "HKCU:\Software\Microsoft\Siuf\Rules" "PeriodInNanoSeconds" 0
 
-# 3.6: Activity History (Timeline)
 Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" "PublishUserActivities" 0
 Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" "UploadUserActivities" 0
 
-# 3.7: Cortana & Web Search/Cloud Search
 Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search" "AllowCortana" 0
 Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search" "AllowCortanaAboveLock" 0
 Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search" "DisableWebSearch" 1
@@ -116,13 +96,8 @@ Set-RegDword "HKCU:\Software\Microsoft\Windows\CurrentVersion\SearchSettings" "I
 Set-RegDword "HKCU:\Software\Microsoft\Windows\CurrentVersion\SearchSettings" "IsCloudHistoryEnabled" 0
 Set-RegDword "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" "CloudSearchEnabled" 0
 
-# 3.8: Tắt đề xuất/đồng bộ nội dung cho “Tailored experiences” trên hệ thống
 Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent" "DisableTailoredExperiencesWithDiagnosticData" 1
 
-# =========================================
-# 4) (TUỲ CHỌN) CHẶN HOST TELEMETRY QUA 'hosts'
-#    CÓ THỂ ẢNH HƯỞNG WINDOWS UPDATE / STORE
-# =========================================
 if ($BlockAggressiveHosts) {
   $hosts = "$env:WinDir\System32\drivers\etc\hosts"
   $entries = @(
@@ -141,9 +116,6 @@ if ($BlockAggressiveHosts) {
   Write-Host "Đã ghi thêm mục vào hosts (BlockAggressiveHosts = ON)."
 }
 
-# =========================================
-# 5) (TUỲ CHỌN) FIREWALL RULES chặn Telemetry
-# =========================================
 if ($AddFirewallBlocks) {
   $fwRules = @(
     @{Name="Block Telemetry (DiagTrack)"; Program="$env:WinDir\System32\svchost.exe"},
@@ -157,23 +129,19 @@ if ($AddFirewallBlocks) {
   }
 }
 
-# ---- Windows Error Reporting task
 if ($DisableWERQueueTask) {
   try { Disable-ScheduledTask -TaskPath "\Microsoft\Windows\Windows Error Reporting\" -TaskName "QueueReporting" -ErrorAction SilentlyContinue | Out-Null } catch {}
 }
 
-# ---- Delivery Optimization: dùng HTTP-only (không P2P/telemetry thêm)
 if ($LimitDeliveryOptimization) {
   New-Item "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeliveryOptimization" -Force | Out-Null
   Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeliveryOptimization" "DODownloadMode" 0
 }
 
-# ---- Defender cloud & sample submission (⚠️ cân nhắc)
 if ($TurnOffDefenderCloud) {
   try { Set-MpPreference -MAPSReporting 0 -SubmitSamplesConsent 2 -ErrorAction SilentlyContinue } catch {}
 }
 
-# ---- SmartScreen (⚠️ KHÔNG KHUYẾN NGHỊ tắt)
 if ($HardDisableSmartScreen) {
   New-Item "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer" -Force | Out-Null
   New-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer" -Name "SmartScreenEnabled" -PropertyType String -Value "Off" -Force | Out-Null
@@ -182,7 +150,6 @@ if ($HardDisableSmartScreen) {
   Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Edge" "SmartScreenEnabled" 0
 }
 
-# ---- Location / Speech / Find my device
 if ($DisableLocation) {
   New-Item "HKLM:\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors" -Force | Out-Null
   Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors" "DisableLocation" 1
@@ -199,7 +166,6 @@ if ($DisableFindMyDevice) {
   Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\FindMyDevice" "AllowFindMyDevice" 0
 }
 
-# ---- Microsoft Edge telemetry/feedback/suggestions
 if ($DisableEdgeTelemetry) {
   New-Item "HKLM:\SOFTWARE\Policies\Microsoft\Edge" -Force | Out-Null
   Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Edge" "MetricsReportingEnabled" 0
@@ -207,7 +173,6 @@ if ($DisableEdgeTelemetry) {
   Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Edge" "SearchSuggestEnabled" 0
 }
 
-# ---- Office 365/2016+ feedback/telemetry
 if ($DisableOfficeTelemetry) {
   New-Item "HKLM:\SOFTWARE\Policies\Microsoft\Office\16.0\Common\Feedback" -Force | Out-Null
   Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Office\16.0\Common\Feedback" "Enabled" 0
@@ -217,7 +182,6 @@ if ($DisableOfficeTelemetry) {
   Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Office\16.0\Common" "QMEnable" 0
 }
 
-# ---- Widgets/News/Spotlight/Consumer features
 if ($DisableNewsWidgetsSpotlight) {
   New-Item "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Feeds" -Force | Out-Null
   Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Feeds" "EnableFeeds" 0
@@ -227,7 +191,6 @@ if ($DisableNewsWidgetsSpotlight) {
   Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent" "DisableConsumerFeatures" 1
 }
 
-# ---- Shared experiences / Cross-device & clipboard sync
 if ($DisableSharedExperience) {
   Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" "EnableCdp" 0
   Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" "AllowCrossDeviceClipboard" 0
