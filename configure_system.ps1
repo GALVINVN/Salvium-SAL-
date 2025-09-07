@@ -14,13 +14,11 @@ $DisableOfficeTelemetry       = $true
 $DisableNewsWidgetsSpotlight  = $true
 $DisableSharedExperience      = $true
 $DisableOneDrive              = $true
-
 try {
   if ($CreateRestorePoint) {
     Checkpoint-Computer -Description "Disable-Telemetry" -RestorePointType "MODIFY_SETTINGS" | Out-Null
   }
 } catch { Write-Host "Không thể tạo Restore Point (bỏ qua): $($_.Exception.Message)" -ForegroundColor DarkYellow }
-
 function Set-RegDword($Path, $Name, $Value) {
   New-Item -Path $Path -Force | Out-Null
   New-ItemProperty -Path $Path -Name $Name -PropertyType DWord -Value $Value -Force | Out-Null
@@ -29,7 +27,6 @@ function Set-RegString($Path, $Name, $Value) {
   New-Item -Path $Path -Force | Out-Null
   New-ItemProperty -Path $Path -Name $Name -PropertyType String -Value $Value -Force | Out-Null
 }
-
 $services = @(
   "diagtrack",
   "dmwappushservice",
@@ -48,7 +45,6 @@ foreach ($svc in $services) {
     } catch { Write-Host "Service $($svc): $($_.Exception.Message)" -ForegroundColor DarkYellow }
   }
 }
-
 $tasks = @(
   "\Microsoft\Windows\Application Experience\Microsoft Compatibility Appraiser",
   "\Microsoft\Windows\Application Experience\ProgramDataUpdater",
@@ -68,25 +64,18 @@ foreach ($t in $tasks) {
     Write-Host "Task $($t) -> Disabled"
   } catch { Write-Host "Task $($t): $($_.Exception.Message)" -ForegroundColor DarkYellow }
 }
-
 Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection" "AllowTelemetry" 0
 Set-RegDword "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection" "AllowTelemetry" 0
-
 Set-RegDword "HKCU:\Software\Microsoft\Windows\CurrentVersion\Privacy" "TailoredExperiencesWithDiagnosticDataEnabled" 0
-
 Set-RegDword "HKCU:\SOFTWARE\Microsoft\Input\TIPC" "Enabled" 0
 Set-RegDword "HKCU:\Software\Microsoft\InputPersonalization" "RestrictImplicitTextCollection" 1
 Set-RegDword "HKCU:\Software\Microsoft\InputPersonalization" "RestrictImplicitInkCollection" 1
-
 Set-RegDword "HKCU:\Software\Microsoft\Windows\CurrentVersion\AdvertisingInfo" "Enabled" 0
-
 New-Item "HKCU:\Software\Microsoft\Siuf\Rules" -Force | Out-Null
 Set-RegDword "HKCU:\Software\Microsoft\Siuf\Rules" "NumberOfSIUFInPeriod" 0
 Set-RegDword "HKCU:\Software\Microsoft\Siuf\Rules" "PeriodInNanoSeconds" 0
-
 Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" "PublishUserActivities" 0
 Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" "UploadUserActivities" 0
-
 Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search" "AllowCortana" 0
 Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search" "AllowCortanaAboveLock" 0
 Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search" "DisableWebSearch" 1
@@ -95,9 +84,7 @@ Set-RegDword "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" "CortanaCo
 Set-RegDword "HKCU:\Software\Microsoft\Windows\CurrentVersion\SearchSettings" "IsDeviceSearchHistoryEnabled" 0
 Set-RegDword "HKCU:\Software\Microsoft\Windows\CurrentVersion\SearchSettings" "IsCloudHistoryEnabled" 0
 Set-RegDword "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" "CloudSearchEnabled" 0
-
 Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent" "DisableTailoredExperiencesWithDiagnosticData" 1
-
 if ($BlockAggressiveHosts) {
   $hosts = "$env:WinDir\System32\drivers\etc\hosts"
   $entries = @(
@@ -115,7 +102,6 @@ if ($BlockAggressiveHosts) {
   }
   Write-Host "Đã ghi thêm mục vào hosts (BlockAggressiveHosts = ON)."
 }
-
 if ($AddFirewallBlocks) {
   $fwRules = @(
     @{Name="Block Telemetry (DiagTrack)"; Program="$env:WinDir\System32\svchost.exe"},
@@ -128,20 +114,16 @@ if ($AddFirewallBlocks) {
     }
   }
 }
-
 if ($DisableWERQueueTask) {
   try { Disable-ScheduledTask -TaskPath "\Microsoft\Windows\Windows Error Reporting\" -TaskName "QueueReporting" -ErrorAction SilentlyContinue | Out-Null } catch {}
 }
-
 if ($LimitDeliveryOptimization) {
   New-Item "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeliveryOptimization" -Force | Out-Null
   Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeliveryOptimization" "DODownloadMode" 0
 }
-
 if ($TurnOffDefenderCloud) {
   try { Set-MpPreference -MAPSReporting 0 -SubmitSamplesConsent 2 -ErrorAction SilentlyContinue } catch {}
 }
-
 if ($HardDisableSmartScreen) {
   New-Item "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer" -Force | Out-Null
   New-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer" -Name "SmartScreenEnabled" -PropertyType String -Value "Off" -Force | Out-Null
@@ -149,7 +131,6 @@ if ($HardDisableSmartScreen) {
   New-Item "HKLM:\SOFTWARE\Policies\Microsoft\Edge" -Force | Out-Null
   Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Edge" "SmartScreenEnabled" 0
 }
-
 if ($DisableLocation) {
   New-Item "HKLM:\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors" -Force | Out-Null
   Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors" "DisableLocation" 1
@@ -165,14 +146,12 @@ if ($DisableFindMyDevice) {
   New-Item "HKLM:\SOFTWARE\Policies\Microsoft\FindMyDevice" -Force | Out-Null
   Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\FindMyDevice" "AllowFindMyDevice" 0
 }
-
 if ($DisableEdgeTelemetry) {
   New-Item "HKLM:\SOFTWARE\Policies\Microsoft\Edge" -Force | Out-Null
   Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Edge" "MetricsReportingEnabled" 0
   Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Edge" "UserFeedbackAllowed" 0
   Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Edge" "SearchSuggestEnabled" 0
 }
-
 if ($DisableOfficeTelemetry) {
   New-Item "HKLM:\SOFTWARE\Policies\Microsoft\Office\16.0\Common\Feedback" -Force | Out-Null
   Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Office\16.0\Common\Feedback" "Enabled" 0
@@ -181,7 +160,6 @@ if ($DisableOfficeTelemetry) {
   New-Item "HKLM:\SOFTWARE\Policies\Microsoft\Office\16.0\Common" -Force | Out-Null
   Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Office\16.0\Common" "QMEnable" 0
 }
-
 if ($DisableNewsWidgetsSpotlight) {
   New-Item "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Feeds" -Force | Out-Null
   Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Feeds" "EnableFeeds" 0
@@ -190,12 +168,15 @@ if ($DisableNewsWidgetsSpotlight) {
   Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent" "DisableWindowsSpotlightOnSettings" 1
   Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent" "DisableConsumerFeatures" 1
 }
-
 if ($DisableSharedExperience) {
   Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" "EnableCdp" 0
   Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" "AllowCrossDeviceClipboard" 0
 }
-
+if ($DisableOneDrive) {
+  New-Item "HKLM:\SOFTWARE\Policies\Microsoft\Windows\OneDrive" -Force | Out-Null
+  Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Windows\OneDrive" "DisableFileSyncNGSC" 1
+  Stop-Process -Name OneDrive -Force -ErrorAction SilentlyContinue
+}
 Set-MpPreference -PUAProtection 0
 Set-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender' -Name 'PUAProtection' -Value 0
 Remove-Item -Path "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\*" -Force
