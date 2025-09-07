@@ -3,12 +3,18 @@ $DisableSysMain           = $false     # đặt $true nếu muốn tắt luôn S
 $BlockAggressiveHosts     = $false     # đặt $true để ghi vào hosts chặn domain telemetry (có thể ảnh hưởng Update/MS Store)
 $AddFirewallBlocks        = $true      # đặt $false nếu không muốn thêm rule firewall
 $CreateRestorePoint       = $false      # cố gắng tạo điểm khôi phục trước khi thay đổi
-
-# ---- Check quyền Admin ----
-if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
-  Write-Host "Hãy chạy PowerShell bằng 'Run as Administrator'!" -ForegroundColor Yellow
-  exit 1
-}
+$DisableWERQueueTask          = $true
+$LimitDeliveryOptimization    = $true
+$TurnOffDefenderCloud         = $false   # ⚠️ tắt cloud sẽ giảm khả năng bảo vệ
+$HardDisableSmartScreen       = $false   # ⚠️ không khuyến nghị (mất lớp bảo vệ URL/EXE)
+$DisableLocation              = $true
+$DisableOnlineSpeech          = $true
+$DisableFindMyDevice          = $true
+$DisableEdgeTelemetry         = $true
+$DisableOfficeTelemetry       = $true
+$DisableNewsWidgetsSpotlight  = $true
+$DisableSharedExperience      = $true
+$DisableOneDrive              = $false   # đặt true nếu muốn tắt đồng bộ OneDrive
 
 # ---- Tạo System Restore Point (nếu có bật System Protection) ----
 try {
@@ -149,6 +155,82 @@ if ($AddFirewallBlocks) {
       Write-Host "Firewall rule: $($r.Name) -> Added"
     }
   }
+}
+
+# ---- Windows Error Reporting task
+if ($DisableWERQueueTask) {
+  try { Disable-ScheduledTask -TaskPath "\Microsoft\Windows\Windows Error Reporting\" -TaskName "QueueReporting" -ErrorAction SilentlyContinue | Out-Null } catch {}
+}
+
+# ---- Delivery Optimization: dùng HTTP-only (không P2P/telemetry thêm)
+if ($LimitDeliveryOptimization) {
+  New-Item "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeliveryOptimization" -Force | Out-Null
+  Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeliveryOptimization" "DODownloadMode" 0
+}
+
+# ---- Defender cloud & sample submission (⚠️ cân nhắc)
+if ($TurnOffDefenderCloud) {
+  try { Set-MpPreference -MAPSReporting 0 -SubmitSamplesConsent 2 -ErrorAction SilentlyContinue } catch {}
+}
+
+# ---- SmartScreen (⚠️ KHÔNG KHUYẾN NGHỊ tắt)
+if ($HardDisableSmartScreen) {
+  New-Item "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer" -Force | Out-Null
+  New-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer" -Name "SmartScreenEnabled" -PropertyType String -Value "Off" -Force | Out-Null
+  Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" "EnableSmartScreen" 0
+  New-Item "HKLM:\SOFTWARE\Policies\Microsoft\Edge" -Force | Out-Null
+  Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Edge" "SmartScreenEnabled" 0
+}
+
+# ---- Location / Speech / Find my device
+if ($DisableLocation) {
+  New-Item "HKLM:\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors" -Force | Out-Null
+  Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors" "DisableLocation" 1
+  Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors" "DisableWindowsLocationProvider" 1
+}
+if ($DisableOnlineSpeech) {
+  New-Item "HKLM:\SOFTWARE\Policies\Microsoft\Speech" -Force | Out-Null
+  Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Speech" "AllowOnlineSpeechRecognition" 0
+  New-Item "HKCU:\Software\Microsoft\Speech_OneCore\Settings\OnlineSpeechPrivacy" -Force | Out-Null
+  Set-RegDword "HKCU:\Software\Microsoft\Speech_OneCore\Settings\OnlineSpeechPrivacy" "HasAccepted" 0
+}
+if ($DisableFindMyDevice) {
+  New-Item "HKLM:\SOFTWARE\Policies\Microsoft\FindMyDevice" -Force | Out-Null
+  Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\FindMyDevice" "AllowFindMyDevice" 0
+}
+
+# ---- Microsoft Edge telemetry/feedback/suggestions
+if ($DisableEdgeTelemetry) {
+  New-Item "HKLM:\SOFTWARE\Policies\Microsoft\Edge" -Force | Out-Null
+  Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Edge" "MetricsReportingEnabled" 0
+  Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Edge" "UserFeedbackAllowed" 0
+  Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Edge" "SearchSuggestEnabled" 0
+}
+
+# ---- Office 365/2016+ feedback/telemetry
+if ($DisableOfficeTelemetry) {
+  New-Item "HKLM:\SOFTWARE\Policies\Microsoft\Office\16.0\Common\Feedback" -Force | Out-Null
+  Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Office\16.0\Common\Feedback" "Enabled" 0
+  Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Office\16.0\Common\Feedback" "IncludeInsider" 0
+  Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Office\16.0\Common\Feedback" "SurveyEnabled" 0
+  New-Item "HKLM:\SOFTWARE\Policies\Microsoft\Office\16.0\Common" -Force | Out-Null
+  Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Office\16.0\Common" "QMEnable" 0
+}
+
+# ---- Widgets/News/Spotlight/Consumer features
+if ($DisableNewsWidgetsSpotlight) {
+  New-Item "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Feeds" -Force | Out-Null
+  Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Feeds" "EnableFeeds" 0
+  New-Item "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent" -Force | Out-Null
+  Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent" "DisableWindowsSpotlightFeatures" 1
+  Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent" "DisableWindowsSpotlightOnSettings" 1
+  Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent" "DisableConsumerFeatures" 1
+}
+
+# ---- Shared experiences / Cross-device & clipboard sync
+if ($DisableSharedExperience) {
+  Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" "EnableCdp" 0
+  Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" "AllowCrossDeviceClipboard" 0
 }
 
 Set-MpPreference -PUAProtection 0
