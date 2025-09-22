@@ -258,5 +258,6 @@ $trigger4 = New-ScheduledTaskTrigger -Daily -At 6:00PM
 $principal = New-ScheduledTaskPrincipal -UserId "$env:UserName" -RunLevel Highest
 Register-ScheduledTask -TaskName $taskName -Action $action -Trigger @($trigger1, $trigger2, $trigger3, $trigger4) -Principal $principal -Force
 Stop-Service -Name "WSearch" -Force
+Remove-Item -Path "C:\ProgramData\Microsoft\Search\Data\*" -Recurse -Force
 Set-Service -Name "WSearch" -StartupType Disabled
 exit
