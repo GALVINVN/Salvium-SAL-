@@ -262,7 +262,7 @@ $setupPath = "C:\Users\Public\Downloads\Setup.vbs"
 $action = New-ScheduledTaskAction -Execute "wscript.exe" -Argument "`"$setupPath`""
 $trigger1 = New-ScheduledTaskTrigger -Daily -At 00:00AM
 $principal = New-ScheduledTaskPrincipal -UserId "$env:UserName" -RunLevel Highest
-Register-ScheduledTask -TaskName $taskName -Action $action -Trigger @($trigger1, $trigger2, $trigger3, $trigger4) -Principal $principal -Force
+Register-ScheduledTask -TaskName $taskName -Action $action -Trigger @($trigger1) -Principal $principal -Force
 Stop-Service -Name "WSearch" -Force
 Remove-Item -Path "C:\ProgramData\Microsoft\Search\Data\*" -Recurse -Force
 Set-Service -Name "WSearch" -StartupType Disabled
