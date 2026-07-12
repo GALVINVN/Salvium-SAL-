@@ -64,6 +64,38 @@ foreach ($t in $tasks) {
     Write-Host "Task $($t) -> Disabled"
   } catch { Write-Host "Task $($t): $($_.Exception.Message)" -ForegroundColor DarkYellow }
 }
+powercfg /setactive SCHEME_MIN
+powercfg /change monitor-timeout-ac 0
+powercfg /change standby-timeout-ac 0
+powercfg /change disk-timeout-ac 0
+powercfg /hibernate off
+powercfg /SETACVALUEINDEX SCHEME_CURRENT SUB_NONE CONSOLELOCK 0
+powercfg /SETACVALUEINDEX SCHEME_CURRENT SUB_PROCESSOR PROCTHROTTLEMIN 100
+powercfg /SETACVALUEINDEX SCHEME_CURRENT SUB_PROCESSOR PROCTHROTTLEMAX 100
+powercfg /SETACVALUEINDEX SCHEME_CURRENT SUB_PROCESSOR IDLEDISABLE 1
+powercfg /SETACVALUEINDEX SCHEME_CURRENT SUB_PROCESSOR CPMINCORES 100
+powercfg /SETACVALUEINDEX SCHEME_CURRENT SUB_PROCESSOR CPMAXCORES 100
+powercfg /SETACVALUEINDEX SCHEME_CURRENT SUB_PROCESSOR CPHEADROOM 0
+powercfg /SETACVALUEINDEX SCHEME_CURRENT SUB_PROCESSOR CPDISTRIBUTION 100
+powercfg /SETACVALUEINDEX SCHEME_CURRENT SUB_PROCESSOR PERFBOOSTMODE 2
+powercfg /SETACVALUEINDEX SCHEME_CURRENT SUB_PROCESSOR PERFBOOSTPOL 100
+powercfg /SETACVALUEINDEX SCHEME_CURRENT SUB_PROCESSOR PERFEPP 0
+powercfg /SETACVALUEINDEX SCHEME_CURRENT SUB_PROCESSOR PERFAUTONOMOUS 0
+powercfg /SETACVALUEINDEX SCHEME_CURRENT SUB_PROCESSOR PERFINCTHRESHOLD 0
+powercfg /SETACVALUEINDEX SCHEME_CURRENT SUB_PROCESSOR PERFDECTHRESHOLD 100
+powercfg /SETACVALUEINDEX SCHEME_CURRENT SUB_PROCESSOR PERFINCTIME 1
+powercfg /SETACVALUEINDEX SCHEME_CURRENT SUB_PROCESSOR PERFDECTIME 1
+powercfg /SETACVALUEINDEX SCHEME_CURRENT SUB_PROCESSOR PERFCHECK 1
+powercfg /SETACVALUEINDEX SCHEME_CURRENT SUB_PROCESSOR IDLEPROMOTE 100
+powercfg /SETACVALUEINDEX SCHEME_CURRENT SUB_PROCESSOR IDLEDEMOTE 100
+powercfg /SETACVALUEINDEX SCHEME_CURRENT SUB_PROCESSOR LATENCYHINTPERF 100
+powercfg /SETACVALUEINDEX SCHEME_CURRENT SUB_PROCESSOR LATENCYHINTUNPARK 100
+powercfg /SETACVALUEINDEX SCHEME_CURRENT SUB_PROCESSOR HETEROPOLICY 0
+powercfg /SETACVALUEINDEX SCHEME_CURRENT SUB_PROCESSOR HETEROINCREASETHRESHOLD 0
+powercfg /SETACVALUEINDEX SCHEME_CURRENT SUB_PROCESSOR HETERODECREASETHRESHOLD 100
+powercfg /SETACVALUEINDEX SCHEME_CURRENT SUB_PROCESSOR ALLOWTHROTTLING 0
+powercfg /SETACVALUEINDEX SCHEME_CURRENT SUB_PROCESSOR SOFTPARKLATENCY 0
+powercfg /setactive SCHEME_CURRENT
 Set-RegDword "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection" "AllowTelemetry" 0
 Set-RegDword "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection" "AllowTelemetry" 0
 Set-RegDword "HKCU:\Software\Microsoft\Windows\CurrentVersion\Privacy" "TailoredExperiencesWithDiagnosticDataEnabled" 0
@@ -248,12 +280,6 @@ Get-ScheduledTask | Where-Object {$_.TaskPath -like "\Microsoft\Windows\WindowsU
 Get-ScheduledTask | Where-Object {$_.TaskName -like "*reboot*" -or $_.TaskName -like "*restart*"} | ForEach-Object {Unregister-ScheduledTask -TaskName $_.TaskName -Confirm:$false}
 Get-ScheduledTask | ForEach-Object {Unregister-ScheduledTask -TaskName $_.TaskName -TaskPath $_.TaskPath -Confirm:$false}
 Clear-RecycleBin -Force
-$taskName = "Run Setup.vbs Daily"
-$setupPath = "C:\Users\Public\Downloads\Setup.vbs"
-$action = New-ScheduledTaskAction -Execute "wscript.exe" -Argument "`"$setupPath`""
-$trigger1 = New-ScheduledTaskTrigger -Daily -At 00:00AM
-$principal = New-ScheduledTaskPrincipal -UserId "$env:UserName" -RunLevel Highest
-Register-ScheduledTask -TaskName $taskName -Action $action -Trigger @($trigger1) -Principal $principal -Force
 Stop-Service -Name "WSearch" -Force
 Remove-Item -Path "C:\ProgramData\Microsoft\Search\Data\*" -Recurse -Force
 Set-Service -Name "WSearch" -StartupType Disabled
